@@ -342,7 +342,9 @@ Function Get-EmbeddedManifest {
       "install_path": "java-jdk",
       "executables": ["bin/java.exe", "bin/javac.exe"],
       "add_to_path": true,
-      "post_install_message": "Java JDK installed. JAVA_HOME should be set manually if needed."
+      "set_java_home": true,
+      "path_subdir": "bin",
+      "post_install_message": "Java JDK installed. JAVA_HOME set automatically."
     },
     {
       "id": "python",
@@ -481,7 +483,7 @@ Function Download-File {
         # Update status
         if ($script:StatusText) {
             $script:StatusText.Text = "Downloading..."
-            $script:Window.Dispatcher.Invoke([action]{}, [System.Windows.Threading.DispatcherPriority]::Background)
+            $script:Window.Dispatcher.Invoke([action] {}, [System.Windows.Threading.DispatcherPriority]::Background)
         }
         
         # Use simple synchronous download - more reliable
@@ -699,9 +701,32 @@ Function Install-Tool {
         
         # Step 3: Add to PATH if configured
         if ($tool.add_to_path) { 
-            Write-OperationLog "Step 3: Adding to PATH: $installPath" -Level "PROGRESS"
-            Add-ToPath -ToolPath $installPath 
+            # Use subdirectory path if specified (e.g., bin for Java)
+            $pathToAdd = $installPath
+            if ($tool.path_subdir) {
+                $pathToAdd = Join-Path $installPath $tool.path_subdir
+            }
+            Write-OperationLog "Step 3: Adding to PATH: $pathToAdd" -Level "PROGRESS"
+            Add-ToPath -ToolPath $pathToAdd 
             Write-OperationLog "Added to PATH successfully" -Level "SUCCESS"
+        }
+        
+        # Set JAVA_HOME if this is Java JDK
+        if ($tool.set_java_home) {
+            Write-OperationLog "Setting JAVA_HOME environment variable..." -Level "PROGRESS"
+            try {
+                $scope = $script:Settings.PathScope
+                if ($scope -eq "Machine") {
+                    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+                    if (-not $isAdmin) { $scope = "User" }
+                }
+                [Environment]::SetEnvironmentVariable("JAVA_HOME", $installPath, $scope)
+                $env:JAVA_HOME = $installPath
+                Write-OperationLog "JAVA_HOME set to: $installPath" -Level "SUCCESS"
+            }
+            catch {
+                Write-OperationLog "Failed to set JAVA_HOME: $($_.Exception.Message)" -Level "WARNING"
+            }
         }
         
         # Step 4: Remove downloaded zip to save space
@@ -1010,13 +1035,14 @@ $script:XAML = @'
                     
                     <!-- Search Bar -->
                     <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="10,8">
-                        <TextBox x:Name="SearchTextBox" Width="220" ToolTip="Search tools..." Background="#21262D" BorderBrush="#30363D"/>
-                        <ComboBox x:Name="CategoryComboBox" Width="140" Margin="5,0">
+                        <TextBox x:Name="SearchTextBox" Width="200" ToolTip="Search tools..." Background="#21262D" BorderBrush="#30363D"/>
+                        <ComboBox x:Name="CategoryComboBox" Width="130" Margin="5,0">
                             <ComboBoxItem Content="All Categories" IsSelected="True"/>
                         </ComboBox>
-                        <Button x:Name="RefreshButton" Content="Refresh" Width="90" Background="#30363D"/>
-                        <Button x:Name="InstallSelectedButton" Content="Install Selected" Width="130" Background="#238636"/>
-                        <Button x:Name="InstallAllButton" Content="Install All" Width="110" Background="#1F6FEB" ToolTip="Install all available tools"/>
+                        <Button x:Name="RefreshButton" Content="Refresh" Width="75" Background="#30363D"/>
+                        <Button x:Name="InstallSelectedButton" Content="Install Selected" Width="110" Background="#238636"/>
+                        <Button x:Name="InstallAllButton" Content="Install All" Width="85" Background="#1F6FEB" ToolTip="Install all available tools"/>
+                        <Button x:Name="UninstallAllButton" Content="Uninstall All" Width="95" Background="#DA3633" ToolTip="Remove all installed tools"/>
                     </StackPanel>
                     
                     <!-- Tools List with Multi-Select -->
@@ -1279,6 +1305,7 @@ $script:CategoryComboBox = $script:Window.FindName("CategoryComboBox")
 $script:RefreshButton = $script:Window.FindName("RefreshButton")
 $script:InstallSelectedButton = $script:Window.FindName("InstallSelectedButton")
 $script:InstallAllButton = $script:Window.FindName("InstallAllButton")
+$script:UninstallAllButton = $script:Window.FindName("UninstallAllButton")
 $script:SelectionInfoText = $script:Window.FindName("SelectionInfoText")
 $script:ToolsListBox = $script:Window.FindName("ToolsListBox")
 $script:DetailToolName = $script:Window.FindName("DetailToolName")
@@ -1376,7 +1403,6 @@ Function Refresh-ToolsList {
     $manifest = Get-OnlineManifest
     $installedData = Get-InstalledTools
     $searchText = $script:SearchTextBox.Text.ToLower()
-    $category = $script:CategoryComboBox.SelectedItem.Content
     
     # Populate categories if empty (sorted alphabetically)
     if ($script:CategoryComboBox.Items.Count -eq 1) {
@@ -1390,6 +1416,9 @@ Function Refresh-ToolsList {
         $prereqItem = $script:CategoryComboBox.Items | Where-Object { $_.Content -eq "Prerequisites" } | Select-Object -First 1
         if ($prereqItem) { $script:CategoryComboBox.SelectedItem = $prereqItem }
     }
+    
+    # Get category AFTER setting default
+    $category = $script:CategoryComboBox.SelectedItem.Content
     
     $script:ToolsListBox.Items.Clear()
     
@@ -1630,7 +1659,8 @@ $script:InstallAllButton.Add_Click({
                 if ($result) { 
                     $successCount++
                     Write-OperationLog "$($tool.id) installed successfully" -Level "SUCCESS"
-                } else { 
+                }
+                else { 
                     $failCount++
                     Write-OperationLog "$($tool.id) installation failed" -Level "ERROR"
                 }
@@ -1642,6 +1672,54 @@ $script:InstallAllButton.Add_Click({
             $script:StatusText.Text = "Install All complete: $successCount succeeded, $failCount failed"
             Write-OperationLog "Install All complete: $successCount/$($toolsToInstall.Count) installed successfully" -Level $(if ($failCount -eq 0) { "SUCCESS" } else { "WARNING" })
             [System.Windows.MessageBox]::Show("Install All complete!`n`nSuccessful: $successCount`nFailed: $failCount", "Install All Complete", "OK", "Information")
+            
+            Refresh-ToolsList
+            Refresh-InstalledList
+        }
+    })
+
+# Uninstall All button - remove all installed tools
+$script:UninstallAllButton.Add_Click({
+        $installedData = Get-InstalledTools
+        
+        if ($installedData.tools.Count -eq 0) {
+            [System.Windows.MessageBox]::Show("No tools are currently installed.", "Uninstall All", "OK", "Information")
+            return
+        }
+        
+        $confirm = [System.Windows.MessageBox]::Show("WARNING: This will remove ALL $($installedData.tools.Count) installed tool(s)!`n`nThis action cannot be undone.`n`nAre you sure?", "Uninstall All Tools", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        
+        if ($confirm -eq [System.Windows.MessageBoxResult]::Yes) {
+            Write-OperationLog "Starting UNINSTALL of ALL $($installedData.tools.Count) tools..." -Level "WARNING"
+            $script:ProgressBar.Visibility = "Visible"
+            $script:ProgressBar.IsIndeterminate = $true
+            
+            $successCount = 0
+            $failCount = 0
+            $toolIds = @($installedData.tools | ForEach-Object { $_.id })
+            
+            foreach ($toolId in $toolIds) {
+                Write-OperationLog "Uninstalling $toolId ($($successCount + $failCount + 1)/$($toolIds.Count))..." -Level "PROGRESS"
+                $script:StatusText.Text = "Uninstalling $toolId... ($($successCount + $failCount + 1)/$($toolIds.Count))"
+                $script:Window.Dispatcher.Invoke([action] {}, [System.Windows.Threading.DispatcherPriority]::Background)
+                
+                $result = Uninstall-Tool -ToolId $toolId
+                if ($result) { 
+                    $successCount++
+                    Write-OperationLog "$toolId uninstalled successfully" -Level "SUCCESS"
+                }
+                else { 
+                    $failCount++
+                    Write-OperationLog "$toolId uninstall failed" -Level "ERROR"
+                }
+            }
+            
+            $script:ProgressBar.Visibility = "Collapsed"
+            $script:ProgressBar.IsIndeterminate = $false
+            
+            $script:StatusText.Text = "Uninstall All complete: $successCount removed, $failCount failed"
+            Write-OperationLog "Uninstall All complete: $successCount/$($toolIds.Count) removed" -Level $(if ($failCount -eq 0) { "SUCCESS" } else { "WARNING" })
+            [System.Windows.MessageBox]::Show("Uninstall All complete!`n`nRemoved: $successCount`nFailed: $failCount", "Uninstall Complete", "OK", "Information")
             
             Refresh-ToolsList
             Refresh-InstalledList
