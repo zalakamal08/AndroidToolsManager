@@ -791,9 +791,6 @@ Function Install-Tool {
     Save-InstalledTools $installedData
     
     Write-Log "Installation complete: $ToolId v$version"
-    if ($tool.post_install_message) {
-        [System.Windows.MessageBox]::Show($tool.post_install_message, "Installation Complete", "OK", "Information")
-    }
     return $true
 }
 
@@ -1095,6 +1092,7 @@ $script:XAML = @'
                         <Button x:Name="InstallSelectedButton" Content="Install Selected" Width="110" Background="#238636"/>
                         <Button x:Name="InstallAllButton" Content="Install All" Width="85" Background="#1F6FEB" ToolTip="Install all available tools"/>
                         <Button x:Name="UninstallAllButton" Content="Uninstall All" Width="95" Background="#DA3633" ToolTip="Remove all installed tools"/>
+                        <CheckBox x:Name="SkipConfirmationsToolbarCheckBox" Content="Skip Prompts" Foreground="White" VerticalAlignment="Center" Margin="10,0,0,0" ToolTip="Don't ask for confirmation when installing/uninstalling"/>
                     </StackPanel>
                     
                     <!-- Tools List with Multi-Select -->
@@ -1359,6 +1357,7 @@ $script:RefreshButton = $script:Window.FindName("RefreshButton")
 $script:InstallSelectedButton = $script:Window.FindName("InstallSelectedButton")
 $script:InstallAllButton = $script:Window.FindName("InstallAllButton")
 $script:UninstallAllButton = $script:Window.FindName("UninstallAllButton")
+$script:SkipConfirmationsToolbarCheckBox = $script:Window.FindName("SkipConfirmationsToolbarCheckBox")
 $script:SelectionInfoText = $script:Window.FindName("SelectionInfoText")
 $script:ToolsListBox = $script:Window.FindName("ToolsListBox")
 $script:DetailToolName = $script:Window.FindName("DetailToolName")
@@ -1609,6 +1608,8 @@ Function Load-SettingsUI {
     $script:KeepDownloadsCheckBox.IsChecked = $script:Settings.KeepDownloads
     $script:EnableLoggingCheckBox.IsChecked = $script:Settings.EnableLogging
     $script:VerifyChecksumsCheckBox.IsChecked = $script:Settings.VerifyChecksums
+    $script:SkipConfirmationsCheckBox.IsChecked = $script:Settings.SkipConfirmations
+    $script:SkipConfirmationsToolbarCheckBox.IsChecked = $script:Settings.SkipConfirmations
 }
 
 # ============================================================================
@@ -1787,6 +1788,18 @@ $script:UninstallAllButton.Add_Click({
             Refresh-ToolsList
             Refresh-InstalledList
         }
+    })
+
+# Skip Confirmations Toolbar CheckBox
+$script:SkipConfirmationsToolbarCheckBox.Add_Checked({ 
+        $script:Settings.SkipConfirmations = $true
+        $script:SkipConfirmationsCheckBox.IsChecked = $true
+        Save-Settings
+    })
+$script:SkipConfirmationsToolbarCheckBox.Add_Unchecked({ 
+        $script:Settings.SkipConfirmations = $false
+        $script:SkipConfirmationsCheckBox.IsChecked = $false
+        Save-Settings
     })
 
 # Tool selection - update info when selection changes
