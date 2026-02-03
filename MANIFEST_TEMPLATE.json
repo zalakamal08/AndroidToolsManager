@@ -1,0 +1,82 @@
+{
+  "manifest_version": "1.0.0",
+  "last_updated": "2025-01-31T00:00:00Z",
+  "update_check_interval": 86400,
+  "categories": [
+    "APK Analysis",
+    "Dynamic Analysis",
+    "Static Analysis",
+    "Network Tools",
+    "Reverse Engineering",
+    "SDK Tools",
+    "Remote Control",
+    "Utilities"
+  ],
+  "tools": [
+    {
+      "id": "unique-tool-id",
+      "name": "toolname",
+      "display_name": "Tool Display Name",
+      "description": "Full description of the tool and its purpose.",
+      "category": "Category Name",
+      "homepage": "https://github.com/user/repo",
+      "update_source": "github_releases",
+      "github_repo": "user/repo",
+      "asset_pattern": "filename-pattern-*.zip",
+      "current_version": "1.0.0",
+      "release_date": "2025-01-01",
+      "download_size_mb": 10.5,
+      "checksum": "sha256:abc123...",
+      "fallback_url": "https://direct-download-url.com/file.zip",
+      "install_type": "extract_zip",
+      "install_path": "toolname",
+      "executables": ["tool.exe", "tool-gui.exe"],
+      "add_to_path": true,
+      "post_install_message": "Tool installed successfully!",
+      "dependencies": [
+        {
+          "name": "Java Runtime",
+          "check_command": "java -version",
+          "install_url": "https://www.java.com/download/"
+        }
+      ]
+    },
+    {
+      "id": "direct-download-example",
+      "name": "example",
+      "display_name": "Direct Download Example",
+      "description": "Example of a tool with direct download URL.",
+      "category": "Utilities",
+      "update_source": "direct_url",
+      "download_url": "https://example.com/tool-latest.zip",
+      "current_version": "2.0.0",
+      "download_size_mb": 5.0,
+      "install_type": "extract_zip",
+      "install_path": "example",
+      "executables": ["example.exe"],
+      "add_to_path": true
+    },
+    {
+      "id": "jar-tool-example",
+      "name": "jartool",
+      "display_name": "JAR Tool Example",
+      "description": "Example of a Java JAR-based tool.",
+      "category": "APK Analysis",
+      "update_source": "github_releases",
+      "github_repo": "user/jartool",
+      "asset_pattern": "jartool-*.jar",
+      "current_version": "1.5.0",
+      "download_size_mb": 8.0,
+      "install_type": "jar_with_wrapper",
+      "install_path": "jartool",
+      "executables": ["jartool.bat"],
+      "add_to_path": true,
+      "dependencies": [
+        {
+          "name": "Java Runtime",
+          "check_command": "java -version"
+        }
+      ]
+    }
+  ]
+}
