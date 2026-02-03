@@ -131,14 +131,14 @@ Function Get-EmbeddedManifest {
   "manifest_version": "1.0.0",
   "last_updated": "2025-01-31T00:00:00Z",
   "update_check_interval": 86400,
-  "categories": ["APK Analysis", "SDK Tools", "Remote Control", "Reverse Engineering", "Utilities"],
+  "categories": ["Analysis Tools", "Prerequisites", "SDK Tools", "Utilities"],
   "tools": [
     {
       "id": "scrcpy",
       "name": "scrcpy",
       "display_name": "scrcpy - Screen Copy",
       "description": "Display and control Android devices connected via USB or TCP/IP. High performance screen mirroring without root.",
-      "category": "Remote Control",
+      "category": "Utilities",
       "homepage": "https://github.com/Genymobile/scrcpy",
       "update_source": "github_releases",
       "github_repo": "Genymobile/scrcpy",
@@ -175,7 +175,7 @@ Function Get-EmbeddedManifest {
       "name": "apktool",
       "display_name": "Apktool",
       "description": "Tool for reverse engineering Android APK files. Decode resources and rebuild after modifications.",
-      "category": "APK Analysis",
+      "category": "Analysis Tools",
       "homepage": "https://apktool.org/",
       "update_source": "github_releases",
       "github_repo": "iBotPeaches/Apktool",
@@ -195,7 +195,7 @@ Function Get-EmbeddedManifest {
       "name": "jadx",
       "display_name": "JADX - Dex to Java Decompiler",
       "description": "Command line and GUI tools for producing Java source code from Android Dex and APK files.",
-      "category": "Reverse Engineering",
+      "category": "Analysis Tools",
       "homepage": "https://github.com/skylot/jadx",
       "update_source": "github_releases",
       "github_repo": "skylot/jadx",
@@ -214,7 +214,7 @@ Function Get-EmbeddedManifest {
       "name": "frida-tools",
       "display_name": "Frida Tools",
       "description": "Dynamic instrumentation toolkit for developers, reverse-engineers, and security researchers.",
-      "category": "Dynamic Analysis",
+      "category": "Analysis Tools",
       "homepage": "https://frida.re/",
       "update_source": "pip",
       "pip_package": "frida-tools",
@@ -225,6 +225,160 @@ Function Get-EmbeddedManifest {
       "add_to_path": false,
       "dependencies": [{"name": "Python", "check_command": "python --version"}],
       "post_install_message": "Frida installed via pip. Requires Python in PATH."
+    },
+    {
+      "id": "apkeditor",
+      "name": "apkeditor",
+      "display_name": "APKEditor",
+      "description": "Powerful Android APK editor for decoding binary resources to readable JSON/XML formats. Merge, protect, and rebuild APK files.",
+      "category": "Analysis Tools",
+      "homepage": "https://github.com/REAndroid/APKEditor",
+      "update_source": "github_releases",
+      "github_repo": "REAndroid/APKEditor",
+      "asset_pattern": "APKEditor-[\\d\\.]+\\.jar",
+      "current_version": "1.3.9",
+      "release_date": "2024-06-15",
+      "download_size_mb": 4.5,
+      "install_type": "jar_with_wrapper",
+      "install_path": "apkeditor",
+      "executables": ["apkeditor.bat"],
+      "add_to_path": true,
+      "dependencies": [{"name": "Java Runtime", "check_command": "java -version"}],
+      "post_install_message": "APKEditor installed. Use 'apkeditor' command. Requires Java."
+    },
+    {
+      "id": "uber-apk-signer",
+      "name": "uber-apk-signer",
+      "display_name": "uber-apk-signer",
+      "description": "CLI tool for signing, zip-aligning, and verifying APKs. Supports v1, v2, v3, v4 signing schemes with embedded debug keystore.",
+      "category": "Analysis Tools",
+      "homepage": "https://github.com/patrickfav/uber-apk-signer",
+      "update_source": "github_releases",
+      "github_repo": "patrickfav/uber-apk-signer",
+      "asset_pattern": "uber-apk-signer-[\\d\\.]+\\.jar",
+      "current_version": "1.3.0",
+      "release_date": "2023-10-15",
+      "download_size_mb": 1.2,
+      "install_type": "jar_with_wrapper",
+      "install_path": "uber-apk-signer",
+      "executables": ["uber-apk-signer.bat"],
+      "add_to_path": true,
+      "dependencies": [{"name": "Java Runtime", "check_command": "java -version"}],
+      "post_install_message": "uber-apk-signer installed. Use to sign and verify APKs."
+    },
+    {
+      "id": "medusa",
+      "name": "medusa",
+      "display_name": "Medusa Framework",
+      "description": "Extensible framework for Android dynamic analysis. Automates Frida scripts, API interception, SSL pinning bypass, and app unpacking.",
+      "category": "Analysis Tools",
+      "homepage": "https://github.com/Ch0pin/medusa",
+      "update_source": "github_releases",
+      "github_repo": "Ch0pin/medusa",
+      "asset_pattern": "Source code \\(zip\\)",
+      "fallback_url": "https://github.com/Ch0pin/medusa/archive/refs/heads/master.zip",
+      "current_version": "2.0",
+      "release_date": "2024-01-20",
+      "download_size_mb": 15.0,
+      "install_type": "extract_zip",
+      "install_path": "medusa",
+      "executables": ["medusa.py"],
+      "add_to_path": false,
+      "dependencies": [{"name": "Python", "check_command": "python --version"}, {"name": "Frida", "check_command": "frida --version"}],
+      "post_install_message": "Medusa installed. Run 'python medusa.py' from the install folder. Requires Python and Frida."
+    },
+    {
+      "id": "bundletool",
+      "name": "bundletool",
+      "display_name": "Bundletool",
+      "description": "Google's official tool for manipulating Android App Bundles (AAB). Build, extract APKs, and install from bundles.",
+      "category": "SDK Tools",
+      "homepage": "https://github.com/google/bundletool",
+      "update_source": "github_releases",
+      "github_repo": "google/bundletool",
+      "asset_pattern": "bundletool-all-[\\d\\.]+\\.jar",
+      "current_version": "1.15.6",
+      "release_date": "2024-02-10",
+      "download_size_mb": 12.5,
+      "install_type": "jar_with_wrapper",
+      "install_path": "bundletool",
+      "executables": ["bundletool.bat"],
+      "add_to_path": true,
+      "dependencies": [{"name": "Java Runtime", "check_command": "java -version"}],
+      "post_install_message": "Bundletool installed. Use 'bundletool' command to work with Android App Bundles."
+    },
+    {
+      "id": "apk-mitm",
+      "name": "apk-mitm",
+      "display_name": "apk-mitm",
+      "description": "Automatically patch APKs for HTTPS inspection. Disables certificate pinning and modifies Network Security Config.",
+      "category": "Analysis Tools",
+      "homepage": "https://github.com/niklashigi/apk-mitm",
+      "update_source": "npm",
+      "npm_package": "apk-mitm",
+      "current_version": "1.2.1",
+      "release_date": "2024-01-15",
+      "download_size_mb": 5.0,
+      "install_type": "npm_install",
+      "install_path": "apk-mitm",
+      "executables": ["apk-mitm"],
+      "add_to_path": false,
+      "dependencies": [{"name": "Node.js", "check_command": "node --version"}],
+      "post_install_message": "apk-mitm installed. Run 'npx apk-mitm <app.apk>' to patch APKs for MITM inspection."
+    },
+    {
+      "id": "java-jdk",
+      "name": "java-jdk",
+      "display_name": "Java JDK (Adoptium Eclipse Temurin)",
+      "description": "Java Development Kit required by many Android tools like Apktool, JADX, and Bundletool.",
+      "category": "Prerequisites",
+      "homepage": "https://adoptium.net/",
+      "update_source": "direct_url",
+      "download_url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.2%2B13/OpenJDK21U-jdk_x64_windows_hotspot_21.0.2_13.zip",
+      "current_version": "21.0.2",
+      "release_date": "2024-01-16",
+      "download_size_mb": 200.0,
+      "install_type": "extract_zip",
+      "install_path": "java-jdk",
+      "executables": ["bin/java.exe", "bin/javac.exe"],
+      "add_to_path": true,
+      "post_install_message": "Java JDK installed. JAVA_HOME should be set manually if needed."
+    },
+    {
+      "id": "python",
+      "name": "python",
+      "display_name": "Python (Embeddable)",
+      "description": "Python runtime required for Frida, Medusa, and many security scripts.",
+      "category": "Prerequisites",
+      "homepage": "https://www.python.org/",
+      "update_source": "direct_url",
+      "download_url": "https://www.python.org/ftp/python/3.12.2/python-3.12.2-embed-amd64.zip",
+      "current_version": "3.12.2",
+      "release_date": "2024-02-06",
+      "download_size_mb": 11.0,
+      "install_type": "extract_zip",
+      "install_path": "python",
+      "executables": ["python.exe"],
+      "add_to_path": true,
+      "post_install_message": "Python installed. Note: For pip support, install full Python from python.org"
+    },
+    {
+      "id": "nodejs",
+      "name": "nodejs",
+      "display_name": "Node.js",
+      "description": "JavaScript runtime required for apk-mitm and other Node-based tools.",
+      "category": "Prerequisites",
+      "homepage": "https://nodejs.org/",
+      "update_source": "direct_url",
+      "download_url": "https://nodejs.org/dist/v20.11.1/node-v20.11.1-win-x64.zip",
+      "current_version": "20.11.1",
+      "release_date": "2024-02-14",
+      "download_size_mb": 30.0,
+      "install_type": "extract_zip",
+      "install_path": "nodejs",
+      "executables": ["node.exe", "npm.cmd", "npx.cmd"],
+      "add_to_path": true,
+      "post_install_message": "Node.js installed. Use npm and npx from command line."
     }
   ]
 }
@@ -490,11 +644,29 @@ Function Install-Tool {
         "direct_url" { $downloadUrl = $tool.download_url }
         "pip" { 
             # Handle pip install separately
+            Write-OperationLog "Installing via pip: $($tool.pip_package)..." -Level "PROGRESS"
             try {
                 $result = & pip install --upgrade $tool.pip_package 2>&1
                 Write-Log "Pip install result: $result"
+                Write-OperationLog "pip install complete" -Level "SUCCESS"
             }
-            catch { return $false }
+            catch { 
+                Write-OperationLog "pip install failed" -Level "ERROR"
+                return $false 
+            }
+        }
+        "npm" {
+            # Handle npm install globally
+            Write-OperationLog "Installing via npm: $($tool.npm_package)..." -Level "PROGRESS"
+            try {
+                $result = & npm install -g $tool.npm_package 2>&1
+                Write-Log "npm install result: $result"
+                Write-OperationLog "npm install complete" -Level "SUCCESS"
+            }
+            catch { 
+                Write-OperationLog "npm install failed" -Level "ERROR"
+                return $false 
+            }
         }
     }
     
@@ -629,9 +801,9 @@ $script:XAML = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Android Pentesting Toolkit Manager v1.0" 
-        Height="650" Width="900" MinHeight="600" MinWidth="800"
+        Height="700" Width="1000" MinHeight="650" MinWidth="900"
         WindowStartupLocation="CenterScreen"
-        Background="#000000">
+        Background="#0D1117">
     <Window.Resources>
         <!-- Button Style -->
         <Style TargetType="Button">
@@ -837,55 +1009,88 @@ $script:XAML = @'
                     </Grid.ColumnDefinitions>
                     
                     <!-- Search Bar -->
-                    <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="5">
-                        <TextBox x:Name="SearchTextBox" Width="250" ToolTip="Search tools..."/>
-                        <ComboBox x:Name="CategoryComboBox" Width="150">
+                    <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="10,8">
+                        <TextBox x:Name="SearchTextBox" Width="220" ToolTip="Search tools..." Background="#21262D" BorderBrush="#30363D"/>
+                        <ComboBox x:Name="CategoryComboBox" Width="140" Margin="5,0">
                             <ComboBoxItem Content="All Categories" IsSelected="True"/>
                         </ComboBox>
-                        <Button x:Name="RefreshButton" Content="Refresh" Width="80"/>
-                        <Button x:Name="InstallSelectedButton" Content="Install Selected" Width="120" Background="#00AA00"/>
+                        <Button x:Name="RefreshButton" Content="Refresh" Width="90" Background="#30363D"/>
+                        <Button x:Name="InstallSelectedButton" Content="Install Selected" Width="130" Background="#238636"/>
+                        <Button x:Name="InstallAllButton" Content="Install All" Width="110" Background="#1F6FEB" ToolTip="Install all available tools"/>
                     </StackPanel>
                     
                     <!-- Tools List with Multi-Select -->
                     <ListBox x:Name="ToolsListBox" Grid.Row="1" Grid.Column="0" Margin="5" SelectionMode="Extended" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                     
                     <!-- Tool Details Panel -->
-                    <Border Grid.Row="1" Grid.Column="1" Background="#0A0A0A" Margin="5" CornerRadius="5" Padding="15">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel x:Name="DetailPanel">
-                                <TextBlock x:Name="DetailToolName" FontSize="18" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                                <TextBlock x:Name="DetailDescription" Foreground="#CCCCCC" TextWrapping="Wrap" Margin="0,0,0,15"/>
-                                
-                                <StackPanel Orientation="Horizontal" Margin="0,5">
-                                    <TextBlock Text="Category: " Foreground="#888888"/>
-                                    <TextBlock x:Name="DetailCategory" Foreground="#007ACC"/>
+                    <Border Grid.Row="1" Grid.Column="1" Background="#161B22" Margin="5" CornerRadius="8" BorderBrush="#30363D" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Header with accent -->
+                            <Border Grid.Row="0" Background="#21262D" CornerRadius="8,8,0,0" Padding="15,12">
+                                <TextBlock x:Name="DetailToolName" FontSize="16" FontWeight="SemiBold" Foreground="#F0F6FC" TextWrapping="Wrap"/>
+                            </Border>
+                            
+                            <!-- Content -->
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="15">
+                                <StackPanel x:Name="DetailPanel">
+                                    <TextBlock x:Name="DetailDescription" Foreground="#8B949E" TextWrapping="Wrap" Margin="0,0,0,20" LineHeight="20"/>
+                                    
+                                    <Border Background="#21262D" CornerRadius="6" Padding="12" Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <Grid Margin="0,3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Category" Foreground="#8B949E" Grid.Column="0"/>
+                                                <TextBlock x:Name="DetailCategory" Foreground="#58A6FF" Grid.Column="1" FontWeight="Medium"/>
+                                            </Grid>
+                                            <Grid Margin="0,3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Version" Foreground="#8B949E" Grid.Column="0"/>
+                                                <TextBlock x:Name="DetailVersion" Foreground="#F0F6FC" Grid.Column="1"/>
+                                            </Grid>
+                                            <Grid Margin="0,3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Size" Foreground="#8B949E" Grid.Column="0"/>
+                                                <TextBlock x:Name="DetailSize" Foreground="#F0F6FC" Grid.Column="1"/>
+                                            </Grid>
+                                            <Grid Margin="0,3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Status" Foreground="#8B949E" Grid.Column="0"/>
+                                                <TextBlock x:Name="DetailStatus" Foreground="#3FB950" Grid.Column="1" FontWeight="Medium"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                        <Button x:Name="InstallButton" Content="Install" Width="95" Background="#238636" Padding="10,8"/>
+                                        <Button x:Name="UpdateButton" Content="Update" Width="95" Visibility="Collapsed" Background="#1F6FEB" Padding="10,8"/>
+                                        <Button x:Name="UninstallButton" Content="Remove" Width="95" Visibility="Collapsed" Background="#DA3633" Padding="10,8"/>
+                                    </StackPanel>
+                                    <Button x:Name="OpenFolderButton" Content="Open Folder" Width="200" Visibility="Collapsed" Margin="0,8,0,0" Background="#30363D"/>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,5">
-                                    <TextBlock Text="Version: " Foreground="#888888"/>
-                                    <TextBlock x:Name="DetailVersion" Foreground="White"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,5">
-                                    <TextBlock Text="Size: " Foreground="#888888"/>
-                                    <TextBlock x:Name="DetailSize" Foreground="White"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,5">
-                                    <TextBlock Text="Status: " Foreground="#888888"/>
-                                    <TextBlock x:Name="DetailStatus" Foreground="#4EC9B0"/>
-                                </StackPanel>
-                                
-                                <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                                    <Button x:Name="InstallButton" Content="Install" Width="100"/>
-                                    <Button x:Name="UpdateButton" Content="Update" Width="100" Visibility="Collapsed"/>
-                                    <Button x:Name="UninstallButton" Content="Uninstall" Width="100" Visibility="Collapsed" Background="#C42B1C"/>
-                                </StackPanel>
-                                <Button x:Name="OpenFolderButton" Content="Open Folder" Width="210" Visibility="Collapsed" Margin="5,5,5,0"/>
-                            </StackPanel>
-                        </ScrollViewer>
+                            </ScrollViewer>
+                        </Grid>
                     </Border>
                     
                     <!-- Selection Info -->
-                    <Border Grid.Row="2" Grid.ColumnSpan="2" Background="#0A0A0A" Padding="10,5">
-                        <TextBlock x:Name="SelectionInfoText" Foreground="#AAAAAA" Text="Hold Ctrl to select multiple tools, then click 'Install Selected'"/>
+                    <Border Grid.Row="2" Grid.ColumnSpan="2" Background="#161B22" Padding="12,8">
+                        <TextBlock x:Name="SelectionInfoText" Foreground="#8B949E" Text="Tip: Hold Ctrl to select multiple tools, then click Install Selected"/>
                     </Border>
                 </Grid>
             </TabItem>
@@ -1037,14 +1242,20 @@ $script:XAML = @'
         </TabControl>
         
         <!-- Status Bar -->
-        <Border Grid.Row="1" Background="#007ACC" Padding="10,5">
+        <Border Grid.Row="1" Padding="12,8">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#238636" Offset="0"/>
+                    <GradientStop Color="#1F6FEB" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="250"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="StatusText" Grid.Column="0" Text="Ready" Foreground="White" VerticalAlignment="Center"/>
-                <ProgressBar x:Name="ProgressBar" Grid.Column="1" Height="15" Minimum="0" Maximum="100" Value="0" Visibility="Collapsed"/>
+                <TextBlock x:Name="StatusText" Grid.Column="0" Text="Ready" Foreground="White" VerticalAlignment="Center" FontWeight="Medium"/>
+                <ProgressBar x:Name="ProgressBar" Grid.Column="1" Height="18" Minimum="0" Maximum="100" Value="0" Visibility="Collapsed" Background="#30363D" Foreground="#58A6FF"/>
             </Grid>
         </Border>
     </Grid>
@@ -1067,6 +1278,7 @@ $script:SearchTextBox = $script:Window.FindName("SearchTextBox")
 $script:CategoryComboBox = $script:Window.FindName("CategoryComboBox")
 $script:RefreshButton = $script:Window.FindName("RefreshButton")
 $script:InstallSelectedButton = $script:Window.FindName("InstallSelectedButton")
+$script:InstallAllButton = $script:Window.FindName("InstallAllButton")
 $script:SelectionInfoText = $script:Window.FindName("SelectionInfoText")
 $script:ToolsListBox = $script:Window.FindName("ToolsListBox")
 $script:DetailToolName = $script:Window.FindName("DetailToolName")
@@ -1166,13 +1378,17 @@ Function Refresh-ToolsList {
     $searchText = $script:SearchTextBox.Text.ToLower()
     $category = $script:CategoryComboBox.SelectedItem.Content
     
-    # Populate categories if empty
+    # Populate categories if empty (sorted alphabetically)
     if ($script:CategoryComboBox.Items.Count -eq 1) {
-        foreach ($cat in $manifest.categories) {
+        $sortedCategories = $manifest.categories | Sort-Object
+        foreach ($cat in $sortedCategories) {
             $item = New-Object System.Windows.Controls.ComboBoxItem
             $item.Content = $cat
             $script:CategoryComboBox.Items.Add($item) | Out-Null
         }
+        # Default to Prerequisites category
+        $prereqItem = $script:CategoryComboBox.Items | Where-Object { $_.Content -eq "Prerequisites" } | Select-Object -First 1
+        if ($prereqItem) { $script:CategoryComboBox.SelectedItem = $prereqItem }
     }
     
     $script:ToolsListBox.Items.Clear()
@@ -1375,6 +1591,57 @@ $script:InstallSelectedButton.Add_Click({
             $script:StatusText.Text = "Batch install complete: $successCount succeeded, $failCount failed"
             Write-OperationLog "Batch installation complete: $successCount succeeded, $failCount failed" -Level $(if ($failCount -eq 0) { "SUCCESS" } else { "WARNING" })
             [System.Windows.MessageBox]::Show("Batch installation complete!`n`nSuccessful: $successCount`nFailed: $failCount", "Installation Complete", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+            
+            Refresh-ToolsList
+            Refresh-InstalledList
+        }
+    })
+
+# Install All button - install all tools
+$script:InstallAllButton.Add_Click({
+        $manifest = Get-OnlineManifest
+        $installedData = Get-InstalledTools
+        $installedIds = @($installedData.tools | ForEach-Object { $_.id })
+        
+        # Get tools not yet installed
+        $toolsToInstall = @($manifest.tools | Where-Object { $installedIds -notcontains $_.id })
+        
+        if ($toolsToInstall.Count -eq 0) {
+            [System.Windows.MessageBox]::Show("All tools are already installed!", "Install All", "OK", "Information")
+            return
+        }
+        
+        $confirm = [System.Windows.MessageBox]::Show("Install all $($toolsToInstall.Count) available tool(s)?`n`nThis may take several minutes.", "Install All Tools", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        
+        if ($confirm -eq [System.Windows.MessageBoxResult]::Yes) {
+            Write-OperationLog "Starting installation of ALL $($toolsToInstall.Count) tools..." -Level "PROGRESS"
+            $script:ProgressBar.Visibility = "Visible"
+            $script:ProgressBar.IsIndeterminate = $true
+            
+            $successCount = 0
+            $failCount = 0
+            
+            foreach ($tool in $toolsToInstall) {
+                Write-OperationLog "Installing $($tool.id) ($($successCount + $failCount + 1)/$($toolsToInstall.Count))..." -Level "PROGRESS"
+                $script:StatusText.Text = "Installing $($tool.display_name)... ($($successCount + $failCount + 1)/$($toolsToInstall.Count))"
+                $script:Window.Dispatcher.Invoke([action] {}, [System.Windows.Threading.DispatcherPriority]::Background)
+                
+                $result = Install-Tool -ToolId $tool.id
+                if ($result) { 
+                    $successCount++
+                    Write-OperationLog "$($tool.id) installed successfully" -Level "SUCCESS"
+                } else { 
+                    $failCount++
+                    Write-OperationLog "$($tool.id) installation failed" -Level "ERROR"
+                }
+            }
+            
+            $script:ProgressBar.Visibility = "Collapsed"
+            $script:ProgressBar.IsIndeterminate = $false
+            
+            $script:StatusText.Text = "Install All complete: $successCount succeeded, $failCount failed"
+            Write-OperationLog "Install All complete: $successCount/$($toolsToInstall.Count) installed successfully" -Level $(if ($failCount -eq 0) { "SUCCESS" } else { "WARNING" })
+            [System.Windows.MessageBox]::Show("Install All complete!`n`nSuccessful: $successCount`nFailed: $failCount", "Install All Complete", "OK", "Information")
             
             Refresh-ToolsList
             Refresh-InstalledList
