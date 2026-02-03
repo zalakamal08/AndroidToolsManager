@@ -625,9 +625,29 @@ Function Install-Tool {
     # Check dependencies
     if ($tool.dependencies) {
         foreach ($dep in $tool.dependencies) {
-            try { Invoke-Expression $dep.check_command 2>&1 | Out-Null }
-            catch {
-                [System.Windows.MessageBox]::Show("Missing dependency: $($dep.name)", "Dependency Required", "OK", "Warning")
+            $checkPassed = $false
+            try {
+                if ($dep.check_command -match "Get-Command") {
+                    Invoke-Expression $dep.check_command | Out-Null
+                    $checkPassed = $true
+                }
+                else {
+                    # Fallback for simple commands: check if command exists in PATH
+                    $cmdName = $dep.check_command.Split(' ')[0]
+                    if (Get-Command $cmdName -ErrorAction SilentlyContinue) {
+                        $checkPassed = $true
+                    }
+                    else {
+                        # Try running it as a last resort (legacy check)
+                        Invoke-Expression $dep.check_command 2>&1 | Out-Null
+                        if ($LASTEXITCODE -eq 0) { $checkPassed = $true }
+                    }
+                }
+            }
+            catch { $checkPassed = $false }
+            
+            if (-not $checkPassed) {
+                [System.Windows.MessageBox]::Show("Missing dependency: $($dep.name)`n`nPlease install $($dep.name) first.", "Dependency Required", "OK", "Warning")
                 return $false
             }
         }
@@ -766,14 +786,28 @@ Function Uninstall-Tool {
     $tool = $installedData.tools | Where-Object { $_.id -eq $ToolId }
     if (-not $tool) { return $false }
     
-    if (-not $Silent) {
+    if (-not $Silent -and -not $script:Settings.SkipConfirmations) {
         $result = [System.Windows.MessageBox]::Show("Uninstall $ToolId ?", "Confirm", "YesNo", "Question")
         if ($result -ne "Yes") { return $false }
     }
     
     try {
         if ($tool.in_path) { Remove-FromPath -ToolPath $tool.install_path }
-        if (Test-Path $tool.install_path) { Remove-Item $tool.install_path -Recurse -Force }
+        
+        if (Test-Path $tool.install_path) { 
+            # Force remove with retry logic for locked files
+            try {
+                Remove-Item $tool.install_path -Recurse -Force -ErrorAction Stop
+            }
+            catch {
+                Write-OperationLog "Standard remove failed, attempting aggressive cleanup..." -Level "WARNING"
+                Start-Sleep -Seconds 1
+                # Try to remove contents first
+                Get-ChildItem -Path $tool.install_path -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+                Remove-Item $tool.install_path -Force -ErrorAction SilentlyContinue
+            }
+        }
+        
         $installedData.tools = @($installedData.tools | Where-Object { $_.id -ne $ToolId })
         Save-InstalledTools $installedData
         Write-Log "Uninstall complete: $ToolId"
@@ -1186,6 +1220,7 @@ $script:XAML = @'
                         <TextBlock Text="Advanced:" Foreground="#CCCCCC" Margin="0,20,0,10"/>
                         <CheckBox x:Name="EnableLoggingCheckBox" Content="Enable logging" IsChecked="True"/>
                         <CheckBox x:Name="VerifyChecksumsCheckBox" Content="Verify file checksums (SHA256)" IsChecked="True"/>
+                        <CheckBox x:Name="SkipConfirmationsCheckBox" Content="Skip confirmation dialogs (install/uninstall without prompts)" Foreground="#FFA500"/>
                         
                         <!-- Manifest URL -->
                         <TextBlock Text="Manifest URL:" Foreground="#CCCCCC" Margin="0,20,0,5"/>
@@ -1332,6 +1367,7 @@ $script:CheckUpdatesStartupCheckBox = $script:Window.FindName("CheckUpdatesStart
 $script:KeepDownloadsCheckBox = $script:Window.FindName("KeepDownloadsCheckBox")
 $script:EnableLoggingCheckBox = $script:Window.FindName("EnableLoggingCheckBox")
 $script:VerifyChecksumsCheckBox = $script:Window.FindName("VerifyChecksumsCheckBox")
+$script:SkipConfirmationsCheckBox = $script:Window.FindName("SkipConfirmationsCheckBox")
 $script:ManifestUrlTextBox = $script:Window.FindName("ManifestUrlTextBox")
 $script:SaveSettingsButton = $script:Window.FindName("SaveSettingsButton")
 $script:ResetSettingsButton = $script:Window.FindName("ResetSettingsButton")
@@ -1588,7 +1624,10 @@ $script:InstallSelectedButton.Add_Click({
             $toolIds += $item.Tag
         }
         
-        $confirm = [System.Windows.MessageBox]::Show("Install $($toolIds.Count) selected tool(s)?`n`n$($toolIds -join ', ')", "Confirm Batch Install", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        $confirm = [System.Windows.MessageBoxResult]::Yes
+        if (-not $script:Settings.SkipConfirmations) {
+            $confirm = [System.Windows.MessageBox]::Show("Install $($toolIds.Count) selected tool(s)?`n`n$($toolIds -join ', ')", "Confirm Batch Install", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        }
         
         if ($confirm -eq [System.Windows.MessageBoxResult]::Yes) {
             Write-OperationLog "Starting batch installation of $($toolIds.Count) tools..." -Level "PROGRESS"
@@ -1640,7 +1679,10 @@ $script:InstallAllButton.Add_Click({
             return
         }
         
-        $confirm = [System.Windows.MessageBox]::Show("Install all $($toolsToInstall.Count) available tool(s)?`n`nThis may take several minutes.", "Install All Tools", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        $confirm = [System.Windows.MessageBoxResult]::Yes
+        if (-not $script:Settings.SkipConfirmations) {
+            $confirm = [System.Windows.MessageBox]::Show("Install all $($toolsToInstall.Count) available tool(s)?`n`nThis may take several minutes.", "Install All Tools", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Question)
+        }
         
         if ($confirm -eq [System.Windows.MessageBoxResult]::Yes) {
             Write-OperationLog "Starting installation of ALL $($toolsToInstall.Count) tools..." -Level "PROGRESS"
@@ -1687,7 +1729,10 @@ $script:UninstallAllButton.Add_Click({
             return
         }
         
-        $confirm = [System.Windows.MessageBox]::Show("WARNING: This will remove ALL $($installedData.tools.Count) installed tool(s)!`n`nThis action cannot be undone.`n`nAre you sure?", "Uninstall All Tools", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        $confirm = [System.Windows.MessageBoxResult]::Yes
+        if (-not $script:Settings.SkipConfirmations) {
+            $confirm = [System.Windows.MessageBox]::Show("WARNING: This will remove ALL $($installedData.tools.Count) installed tool(s)!`n`nThis action cannot be undone.`n`nAre you sure?", "Uninstall All Tools", [System.Windows.MessageBoxButton]::YesNo, [System.Windows.MessageBoxImage]::Warning)
+        }
         
         if ($confirm -eq [System.Windows.MessageBoxResult]::Yes) {
             Write-OperationLog "Starting UNINSTALL of ALL $($installedData.tools.Count) tools..." -Level "WARNING"
@@ -1865,7 +1910,8 @@ $script:SaveSettingsButton.Add_Click({
         $script:Settings.CheckUpdatesOnStartup = $script:CheckUpdatesStartupCheckBox.IsChecked
         $script:Settings.KeepDownloads = $script:KeepDownloadsCheckBox.IsChecked
         $script:Settings.EnableLogging = $script:EnableLoggingCheckBox.IsChecked
-        $script:Settings.VerifyChecksums = $script:VerifyChecksumsCheckBox.IsChecked
+        $script:Settings.VerifyChecksums = $script:Settings.VerifyChecksums
+        $script:Settings.SkipConfirmations = $script:SkipConfirmationsCheckBox.IsChecked
     
         if (Save-Settings) {
             [System.Windows.MessageBox]::Show("Settings saved successfully!", "Settings", "OK", "Information")
