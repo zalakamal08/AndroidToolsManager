@@ -404,6 +404,13 @@ Function Get-OnlineManifest {
                 return (Get-Content $cacheFile -Raw | ConvertFrom-Json)
             }
         }
+        
+        # Check if URL is still the default example
+        if ($script:Settings.ManifestUrl -like "*example*") {
+            Write-Log "Using embedded manifest (Default URL detected)"
+            return Get-EmbeddedManifest
+        }
+        
         Write-Log "Downloading manifest from: $($script:Settings.ManifestUrl)"
         $wc = New-Object System.Net.WebClient
         $wc.Headers.Add("User-Agent", "AndroidToolsManager/$script:AppVersion")
@@ -624,31 +631,42 @@ Function Install-Tool {
     
     # Check dependencies
     if ($tool.dependencies) {
+        $installedList = Get-InstalledTools
         foreach ($dep in $tool.dependencies) {
             $checkPassed = $false
-            try {
-                if ($dep.check_command -match "Get-Command") {
-                    Invoke-Expression $dep.check_command | Out-Null
-                    $checkPassed = $true
-                }
-                else {
-                    # Fallback for simple commands: check if command exists in PATH
-                    $cmdName = $dep.check_command.Split(' ')[0]
-                    if (Get-Command $cmdName -ErrorAction SilentlyContinue) {
+            
+            # Special Case: If looking for Java, pass if we have 'java-jdk' installed locally
+            if ($dep.check_command -like "*java*" -and ($installedList.tools.id -contains "java-jdk")) {
+                Write-Log "Dependency '${dep.name}' satisfied by local 'java-jdk' installation."
+                $checkPassed = $true
+            }
+            # General Case: Check PATH
+            elseif ($true) {
+                # Use existing logic block
+                try {
+                    if ($dep.check_command -match "Get-Command") {
+                        Invoke-Expression $dep.check_command | Out-Null
                         $checkPassed = $true
                     }
                     else {
-                        # Try running it as a last resort (legacy check)
-                        Invoke-Expression $dep.check_command 2>&1 | Out-Null
-                        if ($LASTEXITCODE -eq 0) { $checkPassed = $true }
+                        # Fallback for simple commands: check if command exists in PATH
+                        $cmdName = $dep.check_command.Split(' ')[0]
+                        if (Get-Command $cmdName -ErrorAction SilentlyContinue) {
+                            $checkPassed = $true
+                        }
+                        else {
+                            # Try running it as a last resort (legacy check)
+                            Invoke-Expression $dep.check_command 2>&1 | Out-Null
+                            if ($LASTEXITCODE -eq 0) { $checkPassed = $true }
+                        }
                     }
                 }
-            }
-            catch { $checkPassed = $false }
+                catch { $checkPassed = $false }
             
-            if (-not $checkPassed) {
-                [System.Windows.MessageBox]::Show("Missing dependency: $($dep.name)`n`nPlease install $($dep.name) first.", "Dependency Required", "OK", "Warning")
-                return $false
+                if (-not $checkPassed) {
+                    [System.Windows.MessageBox]::Show("Missing dependency: $($dep.name)`n`nPlease install $($dep.name) first.", "Dependency Required", "OK", "Warning")
+                    return $false
+                }
             }
         }
     }
